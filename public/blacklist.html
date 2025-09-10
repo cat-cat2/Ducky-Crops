@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Blacklist - Duck Corp</title><link rel="stylesheet" href="style.css"><script src="/client.js"></script></head>
+<body class="duck-theme">
+  <div class="container">
+    <header><div class="brand">🐥 Duck Corporations</div></header>
+    <div id="mainNav" style="margin-bottom:10px"></div>
+
+    <div class="card" id="manager">
+      <h2>Blacklist Manager</h2>
+      <div id="formArea"></div>
+      <h3>Currently Blacklisted</h3>
+      <div id="list"></div>
+    </div>
+
+    <footer>Duck Corporations</footer>
+  </div>
+
+<script>
+  renderNav();
+  requireLoginRedirect();
+  getSession().then(sess => {
+    if (!sess.user || (['employee','announcer','dev','admin'].indexOf(sess.user.role) === -1)) {
+      alert("Employee+ only");
+      window.location = "/announcements.html";
+    } else {
+      document.getElementById("formArea").innerHTML =
+        `<input id="ip" placeholder="IP to blacklist (e.g. ::1 or 127.0.0.1)" />
+         <button id="do">Blacklist</button>`;
+      document.getElementById("do").onclick = async () => {
+        const ip = document.getElementById("ip").value.trim();
+        if (!ip) return alert("Enter IP");
+        const r = await fetch("/api/blacklist", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ip })
+        });
+        if (r.ok) { alert("Blacklisted"); loadList(); } else { const j=await r.json().catch(()=>({})); alert(j.error||'Failed'); }
+      };
+      loadList();
+    }
+  });
+
+  async function loadList(){
+    const r = await fetch("/api/blacklist");
+    if (!r.ok) { document.getElementById("list").innerText = 'Not allowed or no data'; return; }
+    const data = await r.json();
+    const el = document.getElementById("list");
+    el.innerHTML = Object.keys(data).length ? "<ul>" + Object.keys(data).map(i => `<li>${escapeHtml(i)}</li>`).join("") + "</ul>" : "<em>None</em>";
+  }
+</script>
+</body>
+</html>

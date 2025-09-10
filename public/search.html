@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"><title>Search - Duck Corp</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="/client.js"></script>
+</head>
+<body class="duck-theme">
+  <div class="container">
+    <header><div class="brand">🐥 Duck Corporations</div></header>
+    <div id="mainNav" style="margin-bottom:10px"></div>
+
+    <div class="card">
+      <h2>Search (DuckDuckGo proxy)</h2>
+      <form id="searchForm">
+        <input id="q" placeholder="Search DuckDuckGo" style="width:70%" />
+        <button type="submit">Search</button>
+      </form>
+      <div id="frameWrap" style="margin-top:12px"></div>
+    </div>
+
+    <footer>Duck Corporations</footer>
+  </div>
+
+<script>
+  renderNav();
+  requireLoginRedirect();
+  document.getElementById('searchForm').onsubmit = (e) => {
+    e.preventDefault();
+    const q = document.getElementById('q').value;
+    if (!q.trim()) return;
+    const src = '/proxy/search?q=' + encodeURIComponent(q);
+    document.getElementById('frameWrap').innerHTML = `<iframe src="${src}" style="width:100%;height:700px;border:1px solid #ddd;border-radius:8px"></iframe>`;
+  };
+</script>
+</body>
+</html>

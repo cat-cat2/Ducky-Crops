@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"><title>Chat - Duck Corp</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="/client.js"></script>
+</head>
+<body class="duck-theme">
+  <div class="container">
+    <header><div class="brand">🐥 Duck Corporations</div></header>
+    <div id="mainNav" style="margin-bottom:10px"></div>
+
+    <div class="card">
+      <h2>Company Chat</h2>
+      <div id="chatBox" style="height:400px; overflow:auto; background:#fff;padding:8px;border-radius:8px;"></div>
+      <div style="margin-top:8px">
+        <textarea id="chatText" rows="3" style="width:100%"></textarea>
+        <button id="sendBtn">Send</button>
+      </div>
+    </div>
+    <footer>Duck Corporations</footer>
+  </div>
+
+<script>
+  renderNav();
+  requireLoginRedirect();
+
+  async function loadChat(){
+    const r = await fetch('/api/chat');
+    const list = await r.json();
+    const box = document.getElementById('chatBox');
+    box.innerHTML = list.map(m => {
+      const d = new Date(m.date);
+      return `<div style="padding:6px;border-bottom:1px dashed #eee"><strong>${escapeHtml(m.author)}</strong> <small>${d.toLocaleString()}</small><div>${escapeHtml(m.text)}</div></div>`;
+    }).join('');
+  }
+
+  document.getElementById('sendBtn').onclick = async () => {
+    const t = document.getElementById('chatText').value.trim();
+    if (!t) return alert('Type a message');
+    const r = await fetch('/api/chat', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text: t })});
+    if (r.ok) { document.getElementById('chatText').value = ''; loadChat(); }
+    else { const j=await r.json().catch(()=>({})); alert(j.error||'Failed to send'); }
+  };
+
+  loadChat();
+  setInterval(loadChat, 3000);
+</script>
+</body>
+</html>

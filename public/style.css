@@ -1,0 +1,73 @@
+/* style.css - duck theme (overwrite existing) */
+body.duck-theme {
+  background: linear-gradient(#fffced, #fff8dc);
+  color: #222;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+  text-align: center;
+}
+.container { max-width: 1000px; margin: 0 auto; }
+header {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  justify-content:center;
+  margin-bottom:12px;
+}
+.brand {
+  font-size: 28px;
+  font-weight:700;
+  color:#f7b500;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+nav {
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  margin-bottom:14px;
+}
+nav a {
+  padding:6px 10px;
+  border-radius:8px;
+  text-decoration:none;
+  color:#222;
+  background: rgba(247,181,0,0.08);
+  border:1px solid rgba(247,181,0,0.12);
+  font-weight:600;
+}
+.card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  padding: 18px;
+  margin: 12px 0;
+  text-align:left;
+}
+input, textarea, select {
+  display:block;
+  width:100%;
+  box-sizing:border-box;
+  padding:8px;
+  margin:8px 0;
+  border-radius:6px;
+  border:1px solid #e6d8a3;
+}
+button {
+  background:#f7b500;
+  border:none;
+  padding:8px 14px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+}
+.small { width:200px; display:inline-block; }
+footer { margin-top:20px; color:#666; font-size:13px; text-align:center; }
+
+/* small responsive tweaks */
+@media(max-width:700px){
+  .brand{font-size:20px}
+  nav{flex-wrap:wrap}
+}

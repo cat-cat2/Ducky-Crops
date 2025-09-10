@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"><title>Settings - Duck Corp</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="/client.js"></script>
+</head>
+<body class="duck-theme">
+  <div class="container">
+    <header><div class="brand">🐥 Duck Corporations</div></header>
+    <div id="mainNav" style="margin-bottom:10px"></div>
+
+    <div class="card" id="meCard">
+      <h2>My Account</h2>
+      <div id="meinfo"></div>
+      <h3>Change password</h3>
+      <input id="oldpw" placeholder="Old password" type="password"><br>
+      <input id="newpw" placeholder="New password" type="password"><br>
+      <button id="changepw">Change Password</button>
+    </div>
+
+    <div class="card" id="tagCard">
+      <h3>Create a new tag (employee+)</h3>
+      <input id="newtag" placeholder="tag name">
+      <button id="createtag">Create Tag</button>
+      <div id="tagsList"></div>
+    </div>
+
+    <div class="card" id="adminCard" style="display:none">
+      <h3>Admin: Manage users</h3>
+      <div id="usersList"></div>
+    </div>
+
+    <footer>Duck Corporations</footer>
+  </div>
+
+<script>
+  renderNav();
+  async function refresh(){
+    const s = await getSession();
+    if (!s.user) { window.location='/login.html'; return; }
+    document.getElementById('meinfo').innerHTML = `<strong>${escapeHtml(s.user.username)}</strong> — role: ${escapeHtml(s.user.role)} — tags: ${(s.user.tags||[]).map(escapeHtml).join(', ')}`;
+    if (s.user.role === 'admin') {
+      document.getElementById('adminCard').style.display = 'block';
+      loadUsers();
+    }
+    loadTags();
+  }
+
+  document.getElementById('changepw').onclick = async () => {
+    const oldp = document.getElementById('oldpw').value, newp = document.getElementById('newpw').value;
+    const r = await fetch('/api/change-password', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ oldPassword: oldp, newPassword: newp })});
+    if (r.ok) alert('Changed'); else { const j=await r.json().catch(()=>({})); alert(j.error||'Failed'); }
+  };
+
+  document.getElementById('createtag').onclick = async () => {
+    const t = document.getElementById('newtag').value.trim(); if (!t) return alert('Enter tag');
+    const r = await fetch('/api/tags/create', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name: t })});
+    if (r.ok) { alert('Created'); document.getElementById('newtag').value=''; loadTags(); } else { const j=await r.json().catch(()=>({})); alert(j.error||'Failed'); }
+  };
+
+  async function loadTags(){
+    const r = await fetch('/api/tags'); const tags = await r.json();
+    document.getElementById('tagsList').innerHTML = '<strong>Global tags:</strong> ' + (tags||[]).map(escapeHtml).join(', ');
+  }
+
+  async function loadUsers(){
+    const r = await fetch('/api/users'); if (!r.ok) return;
+    const users = await r.json();
+    const el = document.getElementById('usersList');
+    el.innerHTML = '<table style="width:100%"><tr><th>User</th><th>Role</th><th>Tags</th><th>Actions</th></tr>' +
+      Object.keys(users).map(u => {
+        const role = users[u].role||'user', tags = (users[u].tags||[]).join(',');
+        return `<tr><td>${escapeHtml(u)}</td><td>${escapeHtml(role)}</td><td>${escapeHtml(tags)}</td>
+          <td>
+            <select data-user="${escapeHtml(u)}" class="roleSel">${['user','employee','announcer','dev','admin'].map(r=>`<option ${r===role?'selected':''}>${r}</option>`).join('')}</select>
+            <input placeholder="tag" data-user="${escapeHtml(u)}" class="tagInput" style="width:100px"/>
+            <button class="setRole" data-user="${escapeHtml(u)}">Set</button>
+            <button class="addTag" data-user="${escapeHtml(u)}">Add Tag</button>
+          </td></tr>`;
+      }).join('') + '</table>';
+    document.querySelectorAll('.setRole').forEach(b => b.onclick = async (e) => {
+      const user = e.target.dataset.user;
+      const sel = document.querySelector(`select[data-user="${user}"]`);
+      const role = sel.value;
+      const r = await fetch('/api/user/set-role', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ username: user, role })});
+      if (r.ok) { alert('Updated'); loadUsers(); } else { const j=await r.json().catch(()=>({})); alert(j.error||'Failed'); }
+    });
+    document.querySelectorAll('.addTag').forEach(b => b.onclick = async (e) => {
+      const user = e.target.dataset.user;
+      const input = document.querySelector(`.tagInput[data-user="${user}"]`);
+      const tag = input.value.trim(); if (!tag) return alert('Enter tag');
+      const r = await fetch('/api/user/add-tag', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ username: user, tag })});
+      if (r.ok) { alert('Tag added'); loadUsers(); } else { const j=await r.json().catch(()=>({})); alert(j.error||'Failed'); }
+    });
+  }
+
+  refresh();
+</script>
+</body>
+</html>

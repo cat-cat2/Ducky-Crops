@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"><title>Announcements - Duck Corp</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="/client.js"></script>
+</head>
+<body class="duck-theme">
+  <div class="container">
+    <header><div class="brand">🐥 Duck Corporations</div></header>
+    <div id="mainNav" style="margin-bottom:10px"></div>
+
+    <nav style="text-align:center;margin-bottom:6px"></nav>
+
+    <div id="announce-card" class="card">
+      <h2>Post an announcement</h2>
+      <div id="announce-area"></div>
+    </div>
+
+    <div id="list" class="card">
+      <h2>Announcements</h2>
+      <div id="announcements"></div>
+    </div>
+
+    <footer>Duck Corporations</footer>
+  </div>
+
+<script>
+  renderNav();
+  requireLoginRedirect();
+
+  async function fetchAnnouncements(){
+    const res = await fetch("/api/announcements");
+    const data = await res.json();
+    const el = document.getElementById("announcements");
+    el.innerHTML = "";
+    (data||[]).forEach(a => {
+      const d = new Date(a.date);
+      const div = document.createElement("div");
+      div.className = "ann-item";
+      div.innerHTML = `<strong>${escapeHtml(a.author)}</strong> <small>(${d.toLocaleString()})</small><div>${escapeHtml(a.text)}</div>`;
+      el.appendChild(div);
+    });
+  }
+
+  getSession().then(sess => {
+    const area = document.getElementById("announce-area");
+    if (sess.user && (sess.user.role === "admin" || sess.user.role === "announcer" || sess.user.role === "dev")) {
+      area.innerHTML = `<textarea id="anntext" rows="4" placeholder="Write announcement..."></textarea>
+        <button id="post">Post Announcement</button>`;
+      document.getElementById("post").onclick = async () => {
+        const text = document.getElementById("anntext").value;
+        if (!text.trim()) return alert("Type something!");
+        const r = await fetch("/api/announce", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text })
+        });
+        if (r.ok) {
+          document.getElementById("anntext").value = "";
+          fetchAnnouncements();
+        } else {
+          const j = await r.json().catch(()=>({})); alert(j.error||"Failed to post.");
+        }
+      };
+    } else {
+      area.innerHTML = `<p>You must be an announcer, dev or admin to post announcements.</p>`;
+    }
+  });
+
+  fetchAnnouncements();
+  setInterval(fetchAnnouncements, 30_000);
+</script>
+</body>
+</html>

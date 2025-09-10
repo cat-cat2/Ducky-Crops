@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Login - Duck Corp</title><link rel="stylesheet" href="style.css"></head>
+<body class="duck-theme">
+  <div class="container">
+    <header><div class="brand">🐥 Duck Corporations</div></header>
+    <div id="mainNav" style="margin-bottom:10px"></div>
+
+    <div class="card" style="max-width:480px;margin:0 auto">
+      <h2>Login</h2>
+      <form method="POST" action="/login">
+        <input name="username" placeholder="Username" required />
+        <input name="password" type="password" placeholder="Password" required />
+        <button type="submit">Login</button>
+      </form>
+      <p style="margin-top:12px;font-size:13px;color:#666">Don't have an account? <a href="/register.html">Register</a></p>
+    </div>
+
+    <footer>Duck Corporations — be nice to the ducks 🦆</footer>
+  </div>
+<script src="/client.js"></script>
+<script>renderNav();</script>
+</body>
+</html>
