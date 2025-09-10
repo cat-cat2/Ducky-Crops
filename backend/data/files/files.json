@@ -1,0 +1,9 @@
+[
+  { "name": "Company Handbook", "url": "https://example.com/handbook.pdf" },
+  { "name": "Duck Wallpapers", "url": "https://example.com/duck-wallpapers" },
+  {
+    "name": "TrueNAS UI",
+    "url": "/truenas/",    
+    "embed": true
+  }
+]
